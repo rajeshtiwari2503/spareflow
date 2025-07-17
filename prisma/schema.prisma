@@ -1,0 +1,1309 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
+    engineType = "library"
+}
+
+datasource db {
+  provider = "postgresql"
+  url = env("DATABASE_URL")
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  BRAND
+  DISTRIBUTOR
+  SERVICE_CENTER
+  CUSTOMER
+}
+
+
+enum ShipmentStatus {
+  INITIATED
+  PENDING
+  CONFIRMED
+  AWB_PENDING
+  AWB_GENERATED
+  PICKUP_SCHEDULED
+  PICKUP_AWAITED
+  PICKUP_COMPLETED
+  DISPATCHED
+  IN_TRANSIT
+  OUT_FOR_DELIVERY
+  DELIVERED
+  UNDELIVERED
+  RTO
+  CANCELLED
+  FAILED
+}
+
+enum BoxStatus {
+  PENDING
+  IN_TRANSIT
+  DELIVERED
+}
+
+enum ReverseRequestStatus {
+  REQUESTED
+  APPROVED
+  PICKED
+  RECEIVED
+}
+
+enum PurchaseOrderStatus {
+  DRAFT
+  APPROVED
+  DISPATCHED
+}
+
+enum CustomerOrderStatus {
+  PENDING
+  SHIPPED
+  DELIVERED
+}
+
+enum NotificationType {
+  MSL_ALERT
+  PURCHASE_ORDER_CREATED
+  FORECAST_UPDATE
+}
+
+enum NotificationPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum WalletTransactionType {
+  CREDIT
+  DEBIT
+}
+
+enum AccessRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum AccessRequestRoleType {
+  SERVICE_CENTER
+  DISTRIBUTOR
+}
+
+enum CourierType {
+  FORWARD
+  REVERSE
+}
+
+enum CourierServiceType {
+  STANDARD
+  EXPRESS
+  ECONOMY
+}
+
+enum ShipmentDirection {
+  BRAND_TO_SERVICE_CENTER
+  SERVICE_CENTER_TO_BRAND
+  DISTRIBUTOR_TO_SERVICE_CENTER
+  SERVICE_CENTER_TO_DISTRIBUTOR
+  BRAND_TO_DISTRIBUTOR
+  DISTRIBUTOR_TO_BRAND
+}
+
+model User {
+  id       String   @id @default(cuid())
+  name     String
+  email    String   @unique
+  password String
+  role     UserRole
+  phone    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Profile relationships
+  brandProfile          BrandProfile?
+  serviceCenterProfile  ServiceCenterProfile?
+  customerProfile       CustomerProfile?
+  distributorProfile    DistributorProfile?
+
+  // Relationships based on role
+  brandShipments        Shipment[]        @relation("BrandShipments")
+  serviceCenterShipments Shipment[]       @relation("ServiceCenterShipments")
+  distributorShipments  Shipment[]        @relation("DistributorShipments")
+  reverseRequests       ReverseRequest[]
+  distributorOrders     PurchaseOrder[]   @relation("DistributorOrders")
+  brandOrders           PurchaseOrder[]   @relation("BrandOrders")
+  serviceCenterOrders   PurchaseOrder[]   @relation("ServiceCenterOrders")
+  customerOrders        CustomerOrder[]
+  parts                 Part[]            @relation("BrandParts")
+  
+  // Wallet relationships
+  brandWallet           BrandWallet?
+  wallet                Wallet?
+  walletTransactions    WalletTransaction[]
+  courierPricing        CourierPricing?
+  advancedCourierPricing AdvancedCourierPricing[] @relation("AdvancedCourierPricing")
+
+  // AI Forecasting relationships
+  serviceCenterReceipts ServiceCenterReceipt[] @relation("ServiceCenterReceipts")
+  forecastingAlerts     ForecastingAlert[]     @relation("BrandForecastingAlerts")
+  
+  // Margin tracking
+  marginLogs            MarginLog[]       @relation("BrandMarginLogs")
+
+  // Distributor inventory
+  distributorInventory  DistributorInventory[]
+
+  // Activity and notifications
+  activityLogs          ActivityLog[]
+
+  // Return requests
+  returnRequests        ReturnRequest[]
+
+  // Warranty relationships
+  warranties            Warranty[]
+
+  // Brand authorization relationships
+  brandServiceCenters   BrandAuthorizedServiceCenter[] @relation("BrandServiceCenters")
+  serviceCenterBrands   BrandAuthorizedServiceCenter[] @relation("ServiceCenterBrands")
+  brandDistributors     BrandAuthorizedDistributor[]   @relation("BrandDistributors")
+  distributorBrands     BrandAuthorizedDistributor[]   @relation("DistributorBrands")
+
+  // Brand access request relationships
+  accessRequests        BrandAccessRequest[]           @relation("UserAccessRequests")
+  brandAccessRequests   BrandAccessRequest[]           @relation("BrandAccessRequests")
+  handledAccessRequests BrandAccessRequest[]           @relation("AdminHandledRequests")
+
+  // Brand invitation relationships
+  brandInvitations      BrandPartnerInvitation[]       @relation("BrandInvitations")
+
+  // Courier tracking relationships
+  courierTransactions   CourierTransaction[]           @relation("CourierTransactions")
+
+  // Payment relationships
+  paymentOrders         PaymentOrder[]                 @relation("UserPaymentOrders")
+
+  // Brand inventory ledger relationships
+  brandInventoryLedger  InventoryLedger[]              @relation("BrandInventoryLedger")
+  brandInventoryStock   BrandInventory[]               @relation("BrandInventoryStock")
+
+  @@map("users")
+}
+
+model Part {
+  id            String  @id @default(cuid())
+  code          String  @unique
+  name          String
+  description   String?
+  weight        Float?
+  price         Float
+  msl           Int?    // Moisture Sensitivity Level
+  brandId       String  @map("brand_id")
+  diyVideoUrl   String? @map("diy_video_url")
+  
+  // Enhanced fields for better catalog management
+  imageUrl      String? @map("image_url")
+  imageUrls     String? @map("image_urls") // JSON array of multiple images
+  length        Float?  // Length in cm
+  breadth       Float?  // Breadth in cm  
+  height        Float?  // Height in cm
+  category      String? // Part category (Motor, Filter, Belt, etc.)
+  subCategory   String? @map("sub_category") // Sub-category
+  tags          String? // JSON array of searchable tags
+  specifications String? // JSON object for technical specs
+  warranty      Int?    // Warranty period in months
+  isActive      Boolean @default(true) @map("is_active")
+  featured      Boolean @default(false) // Featured parts
+  seoTitle      String? @map("seo_title")
+  seoDescription String? @map("seo_description")
+  
+  // Enhanced Inventory Management Fields
+  partNumber    String? @map("part_number") // Alternative part number/SKU
+  brandModel    String? @map("brand_model") // Compatible brand models
+  material      String? // Material composition
+  compatibility String? // Compatibility information
+  costPrice     Float?  @map("cost_price") // Cost price for margin calculation
+  sellingPrice  Float?  @map("selling_price") // Override selling price
+  stockQuantity Int     @default(0) @map("stock_quantity") // Current stock
+  minStockLevel Int     @default(5) @map("min_stock_level") // Minimum stock alert level
+  maxStockLevel Int?    @map("max_stock_level") // Maximum stock level
+  reorderPoint  Int?    @map("reorder_point") // Reorder point
+  reorderQty    Int?    @map("reorder_qty") // Reorder quantity
+  
+  // Media enhancements
+  technicalDrawings String? @map("technical_drawings") // JSON array of technical drawing URLs
+  installationVideos String? @map("installation_videos") // JSON array of installation video URLs
+  
+  // AI-Optimized Search and Problem Resolution Fields
+  problemKeywords String? @map("problem_keywords") // Keywords customers use to describe problems
+  symptoms String? @map("symptoms") // Common symptoms that indicate this part needs replacement
+  compatibleAppliances String? @map("compatible_appliances") // Compatible appliance types and models
+  installationDifficulty String? @map("installation_difficulty") // EASY, MEDIUM, HARD, EXPERT
+  commonFailureReasons String? @map("common_failure_reasons") // Why this part typically fails
+  troubleshootingSteps String? @map("troubleshooting_steps") // Step-by-step troubleshooting guide
+  relatedParts String? @map("related_parts") // Related or complementary parts
+  urgencyLevel String? @map("urgency_level") // LOW, MEDIUM, HIGH, CRITICAL
+  customerDescription String? @map("customer_description") // Customer-friendly description
+  technicalSpecs String? @map("technical_specs") // Detailed technical specifications
+  safetyWarnings String? @map("safety_warnings") // Important safety information
+  maintenanceInterval String? @map("maintenance_interval") // Recommended maintenance schedule
+  lifespan String? @map("lifespan") // Expected lifespan of the part
+  environmentalConditions String? @map("environmental_conditions") // Operating environment requirements
+  
+  // Status and publishing
+  status        String  @default("draft") // draft, published, archived
+  publishedAt   DateTime? @map("published_at")
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  brand User @relation("BrandParts", fields: [brandId], references: [id])
+
+  // Relationships
+  boxParts              BoxPart[]
+  reverseRequests       ReverseRequest[]
+  purchaseOrderItems    PurchaseOrderItem[]    @relation("PurchaseOrderItems")
+  customerOrders        CustomerOrder[]
+  serviceCenterReceipts ServiceCenterReceipt[] @relation("ServiceCenterReceipts")
+  forecastingAlerts     ForecastingAlert[]     @relation("ForecastingAlerts")
+  distributorInventory  DistributorInventory[] @relation("DistributorInventory")
+  returnRequests        ReturnRequest[]        @relation("ReturnRequests")
+  spareRequests         SpareRequest[]         @relation("SpareRequestParts")
+  serviceCenterInventory ServiceCenterInventory[] @relation("ServiceCenterInventoryParts")
+  stockMovements        StockMovement[]        @relation("PartStockMovements")
+
+  // Brand inventory ledger relationships
+  inventoryLedger       InventoryLedger[]      @relation("PartInventoryLedger")
+  brandInventory        BrandInventory[]       @relation("PartBrandInventory")
+
+  @@map("parts")
+}
+
+model Shipment {
+  id              String         @id @default(cuid())
+  brandId         String         @map("brand_id")
+  serviceCenterId String?        @map("service_center_id")
+  distributorId   String?        @map("distributor_id")
+  recipientId     String?        @map("recipient_id") // Generic recipient ID
+  numBoxes        Int            @map("num_boxes")
+  status          ShipmentStatus @default(INITIATED)
+  
+  // Enhanced fields for advanced shipment system
+  recipientType     String?      @map("recipient_type") // SERVICE_CENTER or DISTRIBUTOR
+  recipientAddress  String?      @map("recipient_address") // JSON string
+  recipientPincode  String?      @map("recipient_pincode")
+  
+  // Weight and dimensions
+  totalWeight       Float?       @map("total_weight") // in kg
+  totalValue        Float?       @map("total_value") // total value of shipment
+  
+  // Cost and pricing
+  estimatedCost     Float?       @map("estimated_cost")
+  actualCost        Float?       @map("actual_cost")
+  
+  // Courier and tracking
+  courierPartner    String?      @map("courier_partner") // DTDC, BLUEDART, etc.
+  awbNumber         String?      @map("awb_number")
+  trackingNumber    String?      @map("tracking_number")
+  
+  // Insurance and protection
+  insurance         String?      @map("insurance") // JSON string for insurance details
+  declaredValue     Float?       @map("declared_value")
+  
+  // Shipment metadata
+  notes             String?
+  priority          String?      @default("MEDIUM") // LOW, MEDIUM, HIGH, CRITICAL
+  
+  // Delivery information
+  expectedDelivery  DateTime?    @map("expected_delivery")
+  actualDelivery    DateTime?    @map("actual_delivery")
+  deliveryAttempts  Int?         @default(0) @map("delivery_attempts")
+  
+  // Status tracking
+  pickedUpAt        DateTime?    @map("picked_up_at")
+  inTransitAt       DateTime?    @map("in_transit_at")
+  outForDeliveryAt  DateTime?    @map("out_for_delivery_at")
+  deliveredAt       DateTime?    @map("delivered_at")
+  
+  // Additional data
+  dtdcData          String?      @map("dtdc_data") // JSON string for DTDC response
+  trackingHistory   String?      @map("tracking_history") // JSON array of tracking updates
+  metadata          String?      @map("metadata") // JSON string for additional data
+  
+  // Timestamps
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  brand         User  @relation("BrandShipments", fields: [brandId], references: [id])
+  serviceCenter User? @relation("ServiceCenterShipments", fields: [serviceCenterId], references: [id])
+  distributor   User? @relation("DistributorShipments", fields: [distributorId], references: [id])
+
+  // Relationships
+  boxes Box[]
+  marginLogs MarginLog[]
+  shipmentReceived ShipmentReceived[]
+  inventoryLedger InventoryLedger[] @relation("ShipmentInventoryLedger")
+
+  @@map("shipments")
+}
+
+model Box {
+  id         String    @id @default(cuid())
+  shipmentId String    @map("shipment_id")
+  boxNumber  String    @map("box_number")
+  awbNumber  String?   @map("awb_number")
+  weight     Float?
+  status     BoxStatus @default(PENDING)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  
+  // Pricing and margin tracking
+  customerPrice    Float?  @map("customer_price")    // What customer paid (Y)
+  dtdcCost        Float?  @map("dtdc_cost")          // What DTDC charged (X)
+  margin          Float?  @map("margin")             // Calculated margin (Y - X)
+  marginPercent   Float?  @map("margin_percent")     // Margin percentage
+
+  shipment Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+
+  // Relationships
+  boxParts BoxPart[]
+  trackingHistory BoxTrackingHistory[]
+  marginLogs MarginLog[]
+
+  @@map("boxes")
+}
+
+model BoxTrackingHistory {
+  id          String   @id @default(cuid())
+  boxId       String   @map("box_id")
+  awbNumber   String   @map("awb_number")
+  scanCode    String?  @map("scan_code")
+  status      String
+  location    String?
+  timestamp   DateTime
+  description String?
+  createdAt   DateTime @default(now())
+
+  box Box @relation(fields: [boxId], references: [id], onDelete: Cascade)
+
+  @@map("box_tracking_history")
+}
+
+model BoxPart {
+  id       String @id @default(cuid())
+  boxId    String @map("box_id")
+  partId   String @map("part_id")
+  quantity Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  box  Box  @relation(fields: [boxId], references: [id], onDelete: Cascade)
+  part Part @relation(fields: [partId], references: [id])
+
+  @@map("box_parts")
+}
+
+model ReverseRequest {
+  id                  String               @id @default(cuid())
+  serviceCenterId     String               @map("service_center_id")
+  partId              String               @map("part_id")
+  reason              String
+  returnReason        String?              @map("return_reason") // DEFECTIVE, WRONG_PART, EXCESS_STOCK, etc.
+  costResponsibility  String?              @map("cost_responsibility") // BRAND, SERVICE_CENTER, CUSTOMER
+  courierCost         Float?               @map("courier_cost")
+  paidBy              String?              @map("paid_by") // Who actually paid
+  quantity            Int                  @default(1)
+  status              ReverseRequestStatus @default(REQUESTED)
+  awbNumber           String?              @map("awb_number")
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+
+  serviceCenter User @relation(fields: [serviceCenterId], references: [id])
+  part          Part @relation(fields: [partId], references: [id])
+
+  @@map("reverse_requests")
+}
+
+model PurchaseOrder {
+  id                String              @id @default(cuid())
+  orderNumber       String              @unique @map("order_number")
+  distributorId     String              @map("distributor_id")
+  brandId           String              @map("brand_id")
+  serviceCenterId   String?             @map("service_center_id")
+  totalAmount       Float               @map("total_amount")
+  status            PurchaseOrderStatus @default(DRAFT)
+  rejectionReason   String?             @map("rejection_reason")
+  processedAt       DateTime?           @map("processed_at")
+  shippedAt         DateTime?           @map("shipped_at")
+  awbNumber         String?             @map("awb_number")
+  estimatedDelivery DateTime?           @map("estimated_delivery")
+  requiredBy        DateTime?           @map("required_by")
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  distributor       User                     @relation("DistributorOrders", fields: [distributorId], references: [id])
+  brand             User                     @relation("BrandOrders", fields: [brandId], references: [id])
+  serviceCenter     User?                    @relation("ServiceCenterOrders", fields: [serviceCenterId], references: [id])
+  items             PurchaseOrderItem[]
+  shippingAddress   ShippingAddress?
+  walletTransactions WalletTransaction[]
+
+  @@map("purchase_orders")
+}
+
+model PurchaseOrderItem {
+  id                String        @id @default(cuid())
+  purchaseOrderId   String        @map("purchase_order_id")
+  partId            String        @map("part_id")
+  quantity          Int
+  unitPrice         Float         @map("unit_price")
+  totalPrice        Float         @map("total_price")
+  createdAt         DateTime      @default(now())
+
+  purchaseOrder     PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+  part              Part          @relation("PurchaseOrderItems", fields: [partId], references: [id])
+
+  @@map("purchase_order_items")
+}
+
+model ShippingAddress {
+  id                String        @id @default(cuid())
+  purchaseOrderId   String        @unique @map("purchase_order_id")
+  street            String
+  city              String
+  state             String
+  pincode           String
+  phone             String?
+  createdAt         DateTime      @default(now())
+
+  purchaseOrder     PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+
+  @@map("shipping_addresses")
+}
+
+model CustomerOrder {
+  id         String              @id @default(cuid())
+  customerId String              @map("customer_id")
+  partId     String              @map("part_id")
+  quantity   Int
+  awbNumber  String?             @map("awb_number")
+  status     CustomerOrderStatus @default(PENDING)
+  createdAt  DateTime            @default(now())
+  updatedAt  DateTime            @updatedAt
+  
+  // Pricing and margin tracking
+  customerPrice    Float?  @map("customer_price")    // What customer paid (Y)
+  dtdcCost        Float?  @map("dtdc_cost")          // What DTDC charged (X)
+  margin          Float?  @map("margin")             // Calculated margin (Y - X)
+  marginPercent   Float?  @map("margin_percent")     // Margin percentage
+
+  customer User @relation(fields: [customerId], references: [id])
+  part     Part @relation(fields: [partId], references: [id])
+  marginLogs MarginLog[]
+
+  @@map("customer_orders")
+}
+
+
+
+model BrandWallet {
+  id            String    @id @default(cuid())
+  brandId       String    @unique @map("brand_id")
+  balance       Float     @default(0)
+  totalSpent    Float     @default(0) @map("total_spent")
+  lastRecharge  DateTime? @map("last_recharge")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  brand User @relation(fields: [brandId], references: [id])
+
+  @@map("brand_wallets")
+}
+
+
+
+model CourierPricing {
+  id            String   @id @default(cuid())
+  brandId       String   @unique @map("brand_id")
+  perBoxRate    Float    @map("per_box_rate")
+  isActive      Boolean  @default(true) @map("is_active")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  brand User @relation(fields: [brandId], references: [id])
+
+  @@map("courier_pricing")
+}
+
+model SystemSettings {
+  id                    String   @id @default(cuid())
+  key                   String   @unique
+  value                 String
+  description           String?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@map("system_settings")
+}
+
+// New SystemConfig model for unified pricing
+model SystemConfig {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       String   // JSON string for complex configurations
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("system_config")
+}
+
+model AdvancedCourierPricing {
+  id            String   @id @default(cuid())
+  brandId       String   @map("brand_id")
+  ruleName      String   @map("rule_name")
+  conditions    String   // JSON string containing complex conditions
+  baseRate      Float    @map("base_rate")
+  isActive      Boolean  @default(true) @map("is_active")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  brand User @relation("AdvancedCourierPricing", fields: [brandId], references: [id])
+
+  @@map("advanced_courier_pricing")
+}
+
+model RoleBasedPricing {
+  id            String   @id @default(cuid())
+  role          String   @unique
+  baseRate      Float    @map("base_rate")
+  multiplier    Float    @default(1.0)
+  isActive      Boolean  @default(true) @map("is_active")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("role_based_pricing")
+}
+
+model WeightBasedPricing {
+  id              String   @id @default(cuid())
+  minWeight       Float    @map("min_weight")
+  maxWeight       Float?   @map("max_weight")
+  baseRate        Float    @map("base_rate")
+  additionalRate  Float    @default(0) @map("additional_rate")
+  isActive        Boolean  @default(true) @map("is_active")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("weight_based_pricing")
+}
+
+model PincodeBasedPricing {
+  id            String   @id @default(cuid())
+  pincode       String   @unique
+  zone          String   @default("STANDARD") // STANDARD, REMOTE, METRO, etc.
+  baseRate      Float    @map("base_rate")
+  surcharge     Float    @default(0)
+  isActive      Boolean  @default(true) @map("is_active")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("pincode_based_pricing")
+}
+
+// Enhanced Courier Transaction Model for Forward & Reverse Tracking
+model CourierTransaction {
+  id                    String                @id @default(cuid())
+  transactionNumber     String                @unique @map("transaction_number")
+  userId                String                @map("user_id") // Who initiated the shipment
+  payerId               String?               @map("payer_id") // Who pays for the shipment (can be different)
+  courierType           CourierType           // FORWARD or REVERSE
+  serviceType           CourierServiceType    @default(STANDARD)
+  direction             ShipmentDirection     // Direction of shipment
+  
+  // Shipment details
+  awbNumber             String?               @map("awb_number")
+  weight                Float
+  pieces                Int                   @default(1)
+  
+  // Address information
+  originPincode         String                @map("origin_pincode")
+  destinationPincode    String                @map("destination_pincode")
+  originAddress         String                @map("origin_address")
+  destinationAddress    String                @map("destination_address")
+  
+  // Pricing breakdown
+  baseRate              Float                 @map("base_rate")
+  weightCharges         Float                 @default(0) @map("weight_charges")
+  serviceCharges        Float                 @default(0) @map("service_charges")
+  remoteAreaSurcharge   Float                 @default(0) @map("remote_area_surcharge")
+  platformMarkup        Float                 @default(0) @map("platform_markup")
+  totalCost             Float                 @map("total_cost")
+  
+  // Cost responsibility (for reverse shipments)
+  costResponsibility    String?               @map("cost_responsibility") // BRAND, SERVICE_CENTER, DISTRIBUTOR
+  returnReason          String?               @map("return_reason") // DEFECTIVE, EXCESS_STOCK, WRONG_PART
+  
+  // Payment and wallet tracking
+  walletDeducted        Boolean               @default(false) @map("wallet_deducted")
+  walletDeductionAmount Float?                @map("wallet_deduction_amount")
+  paymentStatus         String                @default("PENDING") // PENDING, COMPLETED, FAILED, REFUNDED
+  
+  // Tracking and status
+  status                String                @default("CREATED") // CREATED, BOOKED, PICKED, IN_TRANSIT, DELIVERED, RETURNED
+  trackingUpdates       String?               @map("tracking_updates") // JSON array of tracking updates
+  
+  // Reference information
+  referenceType         String?               @map("reference_type") // SHIPMENT, RETURN_REQUEST, PURCHASE_ORDER
+  referenceId           String?               @map("reference_id")
+  
+  // Metadata
+  notes                 String?
+  createdAt             DateTime              @default(now()) @map("created_at")
+  updatedAt             DateTime              @updatedAt @map("updated_at")
+  
+  // Relations
+  user                  User                  @relation("CourierTransactions", fields: [userId], references: [id])
+  
+  @@map("courier_transactions")
+}
+
+// Enhanced Reverse Courier Pricing Configuration
+model ReverseCourierConfig {
+  id                        String   @id @default(cuid())
+  
+  // Default rates for different return reasons
+  defectivePartRate         Float    @default(0) @map("defective_part_rate") // Brand pays
+  wrongPartRate             Float    @default(0) @map("wrong_part_rate") // Brand pays
+  excessStockRate           Float    @default(50) @map("excess_stock_rate") // Service Center pays
+  
+  // Service type multipliers for reverse shipments
+  reverseStandardMultiplier Float    @default(1.0) @map("reverse_standard_multiplier")
+  reverseExpressMultiplier  Float    @default(1.5) @map("reverse_express_multiplier")
+  
+  // Weight-based pricing for returns
+  reverseWeightRatePerKg    Float    @default(25) @map("reverse_weight_rate_per_kg")
+  reverseFreeWeightLimit    Float    @default(0.5) @map("reverse_free_weight_limit")
+  
+  // Remote area surcharge for returns
+  reverseRemoteAreaSurcharge Float   @default(25) @map("reverse_remote_area_surcharge")
+  
+  // Platform markup for reverse shipments
+  reverseMarkupPercentage   Float    @default(10) @map("reverse_markup_percentage")
+  
+  // Minimum charges
+  reverseMinimumCharge      Float    @default(50) @map("reverse_minimum_charge")
+  
+  // Configuration metadata
+  isActive                  Boolean  @default(true) @map("is_active")
+  createdAt                 DateTime @default(now()) @map("created_at")
+  updatedAt                 DateTime @updatedAt @map("updated_at")
+  
+  @@map("reverse_courier_config")
+}
+
+model ServiceCenterReceipt {
+  id               String   @id @default(cuid())
+  serviceCenterId  String   @map("service_center_id")
+  partId           String   @map("part_id")
+  quantity         Int
+  district         String
+  usageDate        DateTime @default(now()) @map("usage_date")
+  createdAt        DateTime @default(now())
+
+  serviceCenter User @relation("ServiceCenterReceipts", fields: [serviceCenterId], references: [id])
+  part          Part @relation("ServiceCenterReceipts", fields: [partId], references: [id])
+
+  @@map("service_center_receipts")
+}
+
+model ForecastingAlert {
+  id                   String   @id @default(cuid())
+  partId               String   @map("part_id")
+  brandId              String   @map("brand_id")
+  district             String
+  forecastedDemand     Int      @map("forecasted_demand")
+  availableStock       Int      @map("available_stock")
+  recommendedQuantity  Int      @map("recommended_quantity")
+  status               String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  part  Part @relation("ForecastingAlerts", fields: [partId], references: [id])
+  brand User @relation("BrandForecastingAlerts", fields: [brandId], references: [id])
+
+  @@map("forecasting_alerts")
+}
+
+// New model for tracking margin calculations
+model MarginLog {
+  id              String   @id @default(cuid())
+  shipmentId      String?  @map("shipment_id")
+  boxId           String?  @map("box_id")
+  customerOrderId String?  @map("customer_order_id")
+  brandId         String   @map("brand_id")
+  
+  // Pricing breakdown
+  customerPrice   Float    @map("customer_price")    // What customer paid (Y)
+  dtdcCost       Float    @map("dtdc_cost")          // What DTDC charged (X)
+  margin         Float    @map("margin")             // Calculated margin (Y - X)
+  marginPercent  Float    @map("margin_percent")     // Margin percentage
+  
+  // Additional context
+  awbNumber      String?  @map("awb_number")
+  weight         Float?
+  serviceType    String?  @map("service_type")
+  origin         String?
+  destination    String?
+  
+  // Metadata
+  calculatedAt   DateTime @default(now()) @map("calculated_at")
+  notes          String?
+
+  // Relations
+  brand         User           @relation("BrandMarginLogs", fields: [brandId], references: [id])
+  shipment      Shipment?      @relation(fields: [shipmentId], references: [id])
+  box           Box?           @relation(fields: [boxId], references: [id])
+  customerOrder CustomerOrder? @relation(fields: [customerOrderId], references: [id])
+
+  @@map("margin_logs")
+}
+
+// Distributor-specific models
+model DistributorProfile {
+  id            String   @id @default(cuid())
+  userId        String   @unique @map("user_id")
+  companyName   String   @map("company_name")
+  gstNumber     String?  @map("gst_number")
+  panNumber     String?  @map("pan_number")
+  contactPerson String?  @map("contact_person")
+  website       String?
+  description   String?
+  isVerified    Boolean  @default(false) @map("is_verified")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  address Address?
+
+  @@map("distributor_profiles")
+}
+
+model DistributorInventory {
+  id              String   @id @default(cuid())
+  distributorId   String   @map("distributor_id")
+  partId          String   @map("part_id")
+  currentStock    Int      @map("current_stock")
+  minStockLevel   Int      @map("min_stock_level")
+  maxStockLevel   Int      @map("max_stock_level")
+  unitPrice       Float    @map("unit_price")
+  lastRestocked   DateTime @map("last_restocked")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  distributor User @relation(fields: [distributorId], references: [id])
+  part        Part @relation("DistributorInventory", fields: [partId], references: [id])
+
+  @@unique([distributorId, partId])
+  @@map("distributor_inventory")
+}
+
+model Address {
+  id                    String              @id @default(cuid())
+  street                String
+  area                  String?
+  city                  String
+  state                 String
+  pincode               String
+  country               String              @default("India")
+  isDefault             Boolean             @default(false) @map("is_default")
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+
+  // Relations
+  brandProfile          BrandProfile?       @relation(fields: [brandProfileId], references: [id])
+  brandProfileId        String?             @unique @map("brand_profile_id")
+  serviceCenterProfile  ServiceCenterProfile? @relation(fields: [serviceCenterProfileId], references: [id])
+  serviceCenterProfileId String?            @unique @map("service_center_profile_id")
+  customerProfile       CustomerProfile?    @relation(fields: [customerProfileId], references: [id])
+  customerProfileId     String?             @unique @map("customer_profile_id")
+  distributorProfile    DistributorProfile? @relation(fields: [distributorProfileId], references: [id])
+  distributorProfileId  String?             @unique @map("distributor_profile_id")
+
+  @@map("addresses")
+}
+
+model BrandProfile {
+  id            String   @id @default(cuid())
+  userId        String   @unique @map("user_id")
+  companyName   String   @map("company_name")
+  gstNumber     String?  @map("gst_number")
+  panNumber     String?  @map("pan_number")
+  contactPerson String?  @map("contact_person")
+  website       String?
+  description   String?
+  isVerified    Boolean  @default(false) @map("is_verified")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  addresses Address[]
+
+  @@map("brand_profiles")
+}
+
+model ServiceCenterProfile {
+  id            String   @id @default(cuid())
+  userId        String   @unique @map("user_id")
+  centerName    String   @map("center_name")
+  gstNumber     String?  @map("gst_number")
+  contactPerson String?  @map("contact_person")
+  serviceTypes  String?  @map("service_types") // JSON array
+  isVerified    Boolean  @default(false) @map("is_verified")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  addresses Address[]
+  
+  // Service Center specific relations
+  spareRequests     SpareRequest[]
+  inventory         ServiceCenterInventory[]
+  shipmentReceived  ShipmentReceived[]
+
+  @@map("service_center_profiles")
+}
+
+model CustomerProfile {
+  id          String   @id @default(cuid())
+  userId      String   @unique @map("user_id")
+  firstName   String   @map("first_name")
+  lastName    String   @map("last_name")
+  dateOfBirth DateTime? @map("date_of_birth")
+  gender      String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  addresses Address[]
+
+  @@map("customer_profiles")
+}
+
+model Wallet {
+  id            String    @id @default(cuid())
+  userId        String    @unique @map("user_id")
+  balance       Float     @default(0)
+  totalEarned   Float     @default(0) @map("total_earned")
+  totalSpent    Float     @default(0) @map("total_spent")
+  lastRecharge  DateTime? @map("last_recharge")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("wallets")
+}
+
+model WalletTransaction {
+  id                String                @id @default(cuid())
+  userId            String                @map("user_id")
+  type              WalletTransactionType
+  amount            Float
+  description       String
+  reference         String?               // Reference ID for tracking (e.g., SHIPMENT_xyz, REFUND_xyz)
+  purchaseOrderId   String?               @map("purchase_order_id")
+  balanceAfter      Float                 @map("balance_after")
+  status            String                @default("COMPLETED") // COMPLETED, PENDING, FAILED
+  createdAt         DateTime              @default(now())
+
+  user          User           @relation(fields: [userId], references: [id])
+  purchaseOrder PurchaseOrder? @relation(fields: [purchaseOrderId], references: [id])
+
+  @@map("wallet_transactions")
+}
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  action    String
+  details   String?  // JSON string
+  ipAddress String?  @map("ip_address")
+  userAgent String?  @map("user_agent")
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("activity_logs")
+}
+
+model Notification {
+  id              String   @id @default(cuid())
+  type            String   // SHIPMENT, INVENTORY, ORDER, SYSTEM, ALERT, WARNING
+  title           String
+  message         String
+  priority        String   @default("MEDIUM") // LOW, MEDIUM, HIGH, CRITICAL
+  recipients      String[] // Array of user IDs who should receive this notification
+  data            String?  // JSON string for additional data
+  read            Boolean  @default(false)
+  actionRequired  Boolean  @default(false) @map("action_required")
+  actionUrl       String?  @map("action_url")
+  readAt          DateTime? @map("read_at")
+  expiresAt       DateTime? @map("expires_at")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@map("notifications")
+}
+
+model Warranty {
+  id              String          @id @default(cuid())
+  customerId      String          @map("customer_id")
+  customer        User            @relation(fields: [customerId], references: [id])
+  partName        String          @map("part_name")
+  purchaseDate    DateTime        @map("purchase_date")
+  warrantyPeriod  Int             @map("warranty_period") // in months
+  billImage       String?         @map("bill_image")
+  serviceTickets  ServiceTicket[]
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@map("warranties")
+}
+
+model ServiceTicket {
+  id           String   @id @default(cuid())
+  ticketNumber String   @unique @map("ticket_number")
+  warrantyId   String   @map("warranty_id")
+  warranty     Warranty @relation(fields: [warrantyId], references: [id])
+  issue        String
+  description  String?
+  status       String   @default("OPEN") // OPEN, IN_PROGRESS, RESOLVED, CLOSED
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  resolvedAt   DateTime? @map("resolved_at")
+
+  @@map("service_tickets")
+}
+
+model ReturnRequest {
+  id              String   @id @default(cuid())
+  userId          String   @map("user_id")
+  distributorId   String?  @map("distributor_id")
+  partId          String   @map("part_id")
+  quantity        Int
+  reason          String
+  status          String   @default("PENDING") // PENDING, APPROVED, REJECTED, COMPLETED
+  awbNumber       String?  @map("awb_number")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user        User  @relation(fields: [userId], references: [id])
+  part        Part  @relation("ReturnRequests", fields: [partId], references: [id])
+
+  @@map("return_requests")
+}
+
+// Service Center specific models
+enum SpareRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  DISPATCHED
+  DELIVERED
+  CANCELLED
+}
+
+enum SpareRequestUrgency {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum ShipmentReceivedStatus {
+  PENDING
+  PARTIALLY_RECEIVED
+  FULLY_RECEIVED
+  DISCREPANCY
+}
+
+model SpareRequest {
+  id                    String               @id @default(cuid())
+  requestNumber         String               @unique @map("request_number")
+  serviceCenterProfileId String              @map("service_center_profile_id")
+  brandId               String?              @map("brand_id")
+  distributorId         String?              @map("distributor_id")
+  partId                String               @map("part_id")
+  quantity              Int
+  urgency               SpareRequestUrgency  @default(MEDIUM)
+  status                SpareRequestStatus   @default(PENDING)
+  reason                String?              // Reason for request
+  notes                 String?              // Additional notes
+  requiredBy            DateTime?            @map("required_by")
+  approvedAt            DateTime?            @map("approved_at")
+  rejectedAt            DateTime?            @map("rejected_at")
+  rejectionReason       String?              @map("rejection_reason")
+  dispatchedAt          DateTime?            @map("dispatched_at")
+  awbNumber             String?              @map("awb_number")
+  estimatedDelivery     DateTime?            @map("estimated_delivery")
+  deliveredAt           DateTime?            @map("delivered_at")
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
+
+  serviceCenterProfile  ServiceCenterProfile @relation(fields: [serviceCenterProfileId], references: [id])
+  part                  Part                 @relation("SpareRequestParts", fields: [partId], references: [id])
+
+  @@map("spare_requests")
+}
+
+model ServiceCenterInventory {
+  id                    String               @id @default(cuid())
+  serviceCenterProfileId String              @map("service_center_profile_id")
+  partId                String               @map("part_id")
+  currentStock          Int                  @map("current_stock")
+  minStockLevel         Int                  @map("min_stock_level")
+  maxStockLevel         Int                  @map("max_stock_level")
+  unitCost              Float                @map("unit_cost")
+  lastRestocked         DateTime?            @map("last_restocked")
+  lastConsumed          DateTime?            @map("last_consumed")
+  location              String?              // Storage location within service center
+  notes                 String?              // Additional notes
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
+
+  serviceCenterProfile  ServiceCenterProfile @relation(fields: [serviceCenterProfileId], references: [id])
+  part                  Part                 @relation("ServiceCenterInventoryParts", fields: [partId], references: [id])
+  consumptionLogs       InventoryConsumption[]
+
+  @@unique([serviceCenterProfileId, partId])
+  @@map("service_center_inventory")
+}
+
+model InventoryConsumption {
+  id                        String                   @id @default(cuid())
+  serviceCenterInventoryId  String                   @map("service_center_inventory_id")
+  quantity                  Int
+  reason                    String                   // REPAIR, MAINTENANCE, REPLACEMENT, etc.
+  customerInfo              String?                  @map("customer_info") // Customer details if applicable
+  jobNumber                 String?                  @map("job_number") // Service job reference
+  notes                     String?
+  consumedAt                DateTime                 @default(now()) @map("consumed_at")
+  createdAt                 DateTime                 @default(now())
+
+  inventory                 ServiceCenterInventory   @relation(fields: [serviceCenterInventoryId], references: [id])
+
+  @@map("inventory_consumption")
+}
+
+model ShipmentReceived {
+  id                    String                  @id @default(cuid())
+  serviceCenterProfileId String                 @map("service_center_profile_id")
+  shipmentId            String?                 @map("shipment_id")
+  awbNumber             String                  @map("awb_number")
+  courierName           String?                 @map("courier_name")
+  expectedParts         String                  @map("expected_parts") // JSON array of expected parts
+  receivedParts         String?                 @map("received_parts") // JSON array of actually received parts
+  status                ShipmentReceivedStatus  @default(PENDING)
+  receivedAt            DateTime?               @map("received_at")
+  receivedBy            String?                 @map("received_by") // Staff member who received
+  discrepancyNotes      String?                 @map("discrepancy_notes")
+  images                String?                 // JSON array of image URLs
+  labelUrl              String?                 @map("label_url") // DTDC label URL
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime                @updatedAt
+
+  serviceCenterProfile  ServiceCenterProfile    @relation(fields: [serviceCenterProfileId], references: [id])
+  shipment              Shipment?               @relation(fields: [shipmentId], references: [id])
+
+  @@map("shipment_received")
+}
+
+model BrandAuthorizedServiceCenter {
+  id                    String   @id @default(cuid())
+  brandId               String   @map("brand_id")
+  serviceCenterUserId   String   @map("service_center_user_id")
+  status                String   @default("Active") // Active/Inactive
+  createdAt             DateTime @default(now()) @map("created_at")
+  
+  // Relations
+  brand                 User     @relation("BrandServiceCenters", fields: [brandId], references: [id], onDelete: Cascade)
+  serviceCenter         User     @relation("ServiceCenterBrands", fields: [serviceCenterUserId], references: [id], onDelete: Cascade)
+  
+  // Ensure unique combination of brand and service center
+  @@unique([brandId, serviceCenterUserId])
+  @@map("brand_authorized_service_centers")
+}
+
+model BrandAuthorizedDistributor {
+  id                  String   @id @default(cuid())
+  brandId             String   @map("brand_id")
+  distributorUserId   String   @map("distributor_user_id")
+  status              String   @default("Active") // Active/Inactive
+  createdAt           DateTime @default(now()) @map("created_at")
+  
+  // Relations
+  brand               User     @relation("BrandDistributors", fields: [brandId], references: [id], onDelete: Cascade)
+  distributor         User     @relation("DistributorBrands", fields: [distributorUserId], references: [id], onDelete: Cascade)
+  
+  // Ensure unique combination of brand and distributor
+  @@unique([brandId, distributorUserId])
+  @@map("brand_authorized_distributors")
+}
+
+model BrandAccessRequest {
+  id                 String                   @id @default(cuid()) @map("request_id")
+  userId             String                   @map("user_id")
+  roleType           AccessRequestRoleType    @map("role_type")
+  brandId            String                   @map("brand_id")
+  message            String?
+  documentUrl        String?                  @map("document_url")
+  status             AccessRequestStatus      @default(PENDING)
+  handledByAdminId   String?                  @map("handled_by_admin_id")
+  createdAt          DateTime                 @default(now()) @map("created_at")
+  updatedAt          DateTime                 @updatedAt @map("updated_at")
+
+  // Relations
+  user               User                     @relation("UserAccessRequests", fields: [userId], references: [id], onDelete: Cascade)
+  brand              User                     @relation("BrandAccessRequests", fields: [brandId], references: [id], onDelete: Cascade)
+  handledByAdmin     User?                    @relation("AdminHandledRequests", fields: [handledByAdminId], references: [id])
+
+  @@map("brand_access_requests")
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  EXPIRED
+}
+
+model BrandPartnerInvitation {
+  id                String            @id @default(cuid())
+  brandId           String            @map("brand_id")
+  inviteeEmail      String            @map("invitee_email")
+  partnerType       String            @map("partner_type") // SERVICE_CENTER or DISTRIBUTOR
+  message           String?
+  invitationToken   String            @unique @map("invitation_token")
+  status            InvitationStatus  @default(PENDING)
+  expiresAt         DateTime          @map("expires_at")
+  acceptedAt        DateTime?         @map("accepted_at")
+  rejectedAt        DateTime?         @map("rejected_at")
+  createdAt         DateTime          @default(now()) @map("created_at")
+  updatedAt         DateTime          @updatedAt @map("updated_at")
+
+  // Relations
+  brand             User              @relation("BrandInvitations", fields: [brandId], references: [id], onDelete: Cascade)
+
+  @@map("brand_partner_invitations")
+}
+
+model StockMovement {
+  id          String   @id @default(cuid())
+  partId      String   @map("part_id")
+  type        String   // "IN", "OUT", "ADJUSTMENT"
+  quantity    Int
+  reason      String?  // "RESTOCK", "SALE", "DAMAGE", "ADJUSTMENT", "SHIPMENT", etc.
+  reference   String?  // Order ID, Shipment ID, etc.
+  previousQty Int      @map("previous_qty")
+  newQty      Int      @map("new_qty")
+  notes       String?
+  createdBy   String?  @map("created_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+  
+  part        Part     @relation("PartStockMovements", fields: [partId], references: [id], onDelete: Cascade)
+  
+  @@map("stock_movements")
+}
+
+// Brand Inventory Ledger for complete traceability
+model InventoryLedger {
+  id                String   @id @default(cuid())
+  brandId           String   @map("brand_id")
+  partId            String   @map("part_id")
+  partNumber        String?  @map("part_number") // SKU for easier tracking
+  actionType        String   @map("action_type") // ADD, TRANSFER_OUT, TRANSFER_IN, REVERSE_IN, REVERSE_OUT, CONSUMED
+  quantity          Int
+  source            String   // BRAND, SERVICE_CENTER, DISTRIBUTOR, CUSTOMER, SYSTEM
+  destination       String   // SERVICE_CENTER, DISTRIBUTOR, CUSTOMER, BRAND, SYSTEM
+  shipmentId        String?  @map("shipment_id") // Reference to shipment if applicable
+  referenceNote     String?  @map("reference_note") // Manual entry / shipment ref / reverse ref / etc.
+  createdBy         String?  @map("created_by") // user_id / system
+  createdAt         DateTime @default(now()) @map("created_at")
+  
+  // Additional tracking fields
+  unitCost          Float?   @map("unit_cost") // Cost per unit at time of transaction
+  totalValue        Float?   @map("total_value") // Total value of transaction
+  balanceAfter      Int      @map("balance_after") // Stock balance after this transaction
+  
+  // Relations
+  brand             User     @relation("BrandInventoryLedger", fields: [brandId], references: [id], onDelete: Cascade)
+  part              Part     @relation("PartInventoryLedger", fields: [partId], references: [id], onDelete: Cascade)
+  shipment          Shipment? @relation("ShipmentInventoryLedger", fields: [shipmentId], references: [id])
+  
+  @@map("inventory_ledger")
+}
+
+// Brand Inventory Summary for quick access to current stock levels
+model BrandInventory {
+  id                String   @id @default(cuid())
+  brandId           String   @map("brand_id")
+  partId            String   @map("part_id")
+  onHandQuantity    Int      @map("on_hand_quantity") // Current stock on hand
+  reservedQuantity  Int      @default(0) @map("reserved_quantity") // Reserved for pending shipments
+  availableQuantity Int      @map("available_quantity") // Available = OnHand - Reserved
+  lastUpdated       DateTime @updatedAt @map("last_updated")
+  lastRestocked     DateTime? @map("last_restocked")
+  lastIssued        DateTime? @map("last_issued")
+  
+  // Cost tracking
+  averageCost       Float?   @map("average_cost") // Weighted average cost
+  lastCost          Float?   @map("last_cost") // Last purchase/restock cost
+  
+  // Relations
+  brand             User     @relation("BrandInventoryStock", fields: [brandId], references: [id], onDelete: Cascade)
+  part              Part     @relation("PartBrandInventory", fields: [partId], references: [id], onDelete: Cascade)
+  
+  @@unique([brandId, partId])
+  @@map("brand_inventory")
+}
+
+enum PaymentOrderStatus {
+  CREATED
+  COMPLETED
+  FAILED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentPurpose {
+  WALLET_RECHARGE
+  SHIPMENT_PAYMENT
+  SUBSCRIPTION
+  OTHER
+}
+
+model PaymentOrder {
+  id                String             @id @default(cuid())
+  userId            String             @map("user_id")
+  razorpayOrderId   String?            @map("razorpay_order_id")
+  razorpayPaymentId String?            @map("razorpay_payment_id")
+  amount            Float
+  currency          String             @default("INR")
+  status            PaymentOrderStatus @default(CREATED)
+  purpose           PaymentPurpose     @default(WALLET_RECHARGE)
+  metadata          String?            // JSON string for additional data
+  failureReason     String?            @map("failure_reason")
+  completedAt       DateTime?          @map("completed_at")
+  createdAt         DateTime           @default(now()) @map("created_at")
+  updatedAt         DateTime           @updatedAt @map("updated_at")
+
+  // Relations
+  user              User               @relation("UserPaymentOrders", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("payment_orders")
+}

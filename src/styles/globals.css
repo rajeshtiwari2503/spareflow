@@ -1,0 +1,156 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --mode: light;
+}
+
+/* SpareFlow Brand Theme - Professional Blue & Green */
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 84% 4.9%;
+    --primary: 221 83% 53%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 160 84% 39%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222 47% 11%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 221 83% 53%;
+    --chart-1: 221 83% 53%;
+    --chart-2: 160 84% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+    --radius: 0.75rem;
+    
+    /* SpareFlow Brand Colors */
+    --spareflow-blue: 221 83% 53%;
+    --spareflow-blue-dark: 221 83% 43%;
+    --spareflow-blue-light: 221 83% 63%;
+    --spareflow-green: 160 84% 39%;
+    --spareflow-green-dark: 160 84% 29%;
+    --spareflow-green-light: 160 84% 49%;
+    --spareflow-accent: 45 93% 58%;
+    --spareflow-gray: 215 16% 47%;
+    --spareflow-gray-light: 210 40% 96%;
+    --spareflow-gradient: linear-gradient(135deg, hsl(221 83% 53%) 0%, hsl(160 84% 39%) 100%);
+    --spareflow-gradient-reverse: linear-gradient(135deg, hsl(160 84% 39%) 0%, hsl(221 83% 53%) 100%);
+  }
+  
+  .dark {
+    --background: 222 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 221 83% 53%;
+    --primary-foreground: 222 84% 4.9%;
+    --secondary: 160 84% 39%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 217 33% 17%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 221 83% 53%;
+    --chart-1: 221 83% 53%;
+    --chart-2: 160 84% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  }
+}
+
+@layer components {
+  /* SpareFlow Brand Components */
+  .spareflow-gradient {
+    background: linear-gradient(135deg, hsl(221 83% 53%) 0%, hsl(160 84% 39%) 100%);
+  }
+  
+  .spareflow-gradient-reverse {
+    background: linear-gradient(135deg, hsl(160 84% 39%) 0%, hsl(221 83% 53%) 100%);
+  }
+  
+  .spareflow-text-gradient {
+    background: linear-gradient(135deg, hsl(221 83% 53%) 0%, hsl(160 84% 39%) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .spareflow-btn-primary {
+    @apply bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium px-6 py-2 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl;
+  }
+  
+  .spareflow-btn-secondary {
+    @apply bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-medium px-6 py-2 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl;
+  }
+  
+  .spareflow-card {
+    @apply bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200;
+  }
+  
+  .spareflow-card-dark {
+    @apply bg-gray-800 border border-gray-700 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200;
+  }
+  
+  .spareflow-hero-bg {
+    background: linear-gradient(135deg, hsl(221 83% 53% / 0.05) 0%, hsl(160 84% 39% / 0.05) 100%);
+  }
+  
+  .spareflow-section-bg {
+    background: linear-gradient(180deg, transparent 0%, hsl(221 83% 53% / 0.02) 50%, transparent 100%);
+  }
+}
+
+@layer utilities {
+  .text-spareflow-blue {
+    color: hsl(221 83% 53%);
+  }
+  
+  .text-spareflow-green {
+    color: hsl(160 84% 39%);
+  }
+  
+  .bg-spareflow-blue {
+    background-color: hsl(221 83% 53%);
+  }
+  
+  .bg-spareflow-green {
+    background-color: hsl(160 84% 39%);
+  }
+  
+  .border-spareflow-blue {
+    border-color: hsl(221 83% 53%);
+  }
+  
+  .border-spareflow-green {
+    border-color: hsl(160 84% 39%);
+  }
+}

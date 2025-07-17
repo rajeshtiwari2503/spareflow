@@ -1,0 +1,39 @@
+# Robots.txt for SpareFlow - Spare Parts Logistics Platform
+# https://spareflow.com
+
+User-agent: *
+Allow: /
+
+# Allow all major search engines
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Slurp
+Allow: /
+
+User-agent: DuckDuckBot
+Allow: /
+
+# Disallow admin and private areas
+Disallow: /dashboard/
+Disallow: /api/
+Disallow: /admin/
+Disallow: /_next/
+Disallow: /auth/
+Disallow: /invitation/
+
+# Allow specific public API endpoints that might be useful for SEO
+Allow: /api/public/
+
+# Crawl delay (optional - be respectful)
+Crawl-delay: 1
+
+# Sitemap location
+Sitemap: https://spareflow.com/sitemap.xml
+
+# Additional sitemaps (if you create them later)
+# Sitemap: https://spareflow.com/blog-sitemap.xml
+# Sitemap: https://spareflow.com/products-sitemap.xml

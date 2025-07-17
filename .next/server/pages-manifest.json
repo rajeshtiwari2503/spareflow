@@ -1,0 +1,11 @@
+{
+  "/_app": "pages/_app.js",
+  "/_error": "pages/_error.js",
+  "/_document": "pages/_document.js",
+  "/auth/login": "pages/auth/login.js",
+  "/dashboard": "pages/dashboard.js",
+  "/dashboard/brand": "pages/dashboard/brand.js",
+  "/api/reverse-requests": "pages/api/reverse-requests.js",
+  "/api/brand/authorized-network": "pages/api/brand/authorized-network.js",
+  "/api/brand/access-requests": "pages/api/brand/access-requests.js"
+}
