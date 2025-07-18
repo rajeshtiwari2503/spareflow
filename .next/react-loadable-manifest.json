@@ -1,1 +1,80 @@
-{}
+{
+  "pages\\dashboard\\super-admin.tsx -> @/components/AccessRequestsManager": {
+    "id": "pages\\dashboard\\super-admin.tsx -> @/components/AccessRequestsManager",
+    "files": [
+      "static/chunks/src_components_AccessRequestsManager_tsx.js"
+    ]
+  },
+  "pages\\dashboard\\super-admin.tsx -> @/components/AdminOverviewDashboard": {
+    "id": "pages\\dashboard\\super-admin.tsx -> @/components/AdminOverviewDashboard",
+    "files": [
+      "static/chunks/src_components_AdminOverviewDashboard_tsx.js"
+    ]
+  },
+  "pages\\dashboard\\super-admin.tsx -> @/components/AdminUserManagement": {
+    "id": "pages\\dashboard\\super-admin.tsx -> @/components/AdminUserManagement",
+    "files": [
+      "static/chunks/src_components_AdminUserManagement_tsx.js"
+    ]
+  },
+  "pages\\dashboard\\super-admin.tsx -> @/components/AdvancedMarginAnalytics": {
+    "id": "pages\\dashboard\\super-admin.tsx -> @/components/AdvancedMarginAnalytics",
+    "files": [
+      "static/chunks/src_components_AdvancedMarginAnalytics_tsx.js"
+    ]
+  },
+  "pages\\dashboard\\super-admin.tsx -> @/components/AdvancedPricingRulesManager": {
+    "id": "pages\\dashboard\\super-admin.tsx -> @/components/AdvancedPricingRulesManager",
+    "files": [
+      "static/chunks/src_components_AdvancedPricingRulesManager_tsx.js"
+    ]
+  },
+  "pages\\dashboard\\super-admin.tsx -> @/components/AdvancedReportingSystem": {
+    "id": "pages\\dashboard\\super-admin.tsx -> @/components/AdvancedReportingSystem",
+    "files": [
+      "static/chunks/src_components_AdvancedReportingSystem_tsx.js"
+    ]
+  },
+  "pages\\dashboard\\super-admin.tsx -> @/components/CourierMarginDashboard": {
+    "id": "pages\\dashboard\\super-admin.tsx -> @/components/CourierMarginDashboard",
+    "files": [
+      "static/chunks/src_components_CourierMarginDashboard_tsx.js"
+    ]
+  },
+  "pages\\dashboard\\super-admin.tsx -> @/components/DemoDataCleanupManager": {
+    "id": "pages\\dashboard\\super-admin.tsx -> @/components/DemoDataCleanupManager",
+    "files": [
+      "static/chunks/src_components_DemoDataCleanupManager_tsx.js"
+    ]
+  },
+  "pages\\dashboard\\super-admin.tsx -> @/components/EnhancedProfileManager": {
+    "id": "pages\\dashboard\\super-admin.tsx -> @/components/EnhancedProfileManager",
+    "files": [
+      "static/chunks/src_components_EnhancedProfileManager_tsx.js"
+    ]
+  },
+  "pages\\dashboard\\super-admin.tsx -> @/components/MarginAnalyticsDashboard": {
+    "id": "pages\\dashboard\\super-admin.tsx -> @/components/MarginAnalyticsDashboard",
+    "files": [
+      "static/chunks/src_components_MarginAnalyticsDashboard_tsx.js"
+    ]
+  },
+  "pages\\dashboard\\super-admin.tsx -> @/components/SystemHealthMonitor": {
+    "id": "pages\\dashboard\\super-admin.tsx -> @/components/SystemHealthMonitor",
+    "files": [
+      "static/chunks/src_components_SystemHealthMonitor_tsx.js"
+    ]
+  },
+  "pages\\dashboard\\super-admin.tsx -> @/components/UnifiedNotificationCenter": {
+    "id": "pages\\dashboard\\super-admin.tsx -> @/components/UnifiedNotificationCenter",
+    "files": [
+      "static/chunks/src_components_UnifiedNotificationCenter_tsx.js"
+    ]
+  },
+  "pages\\dashboard\\super-admin.tsx -> @/components/UnifiedPricingManager": {
+    "id": "pages\\dashboard\\super-admin.tsx -> @/components/UnifiedPricingManager",
+    "files": [
+      "static/chunks/src_components_UnifiedPricingManager_tsx.js"
+    ]
+  }
+}
