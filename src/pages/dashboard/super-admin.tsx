@@ -793,7 +793,7 @@ function SuperAdminDashboard() {
           </div>
 
           <Tabs defaultValue="overview" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-6 lg:grid-cols-16">
+            <TabsList className="grid w-full mb-16 grid-cols-6 lg:grid-cols-16">
               <TabsTrigger value="overview" className="flex items-center gap-1 text-xs">
                 <Activity className="h-3 w-3" />
                 Overview
