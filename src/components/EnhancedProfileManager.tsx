@@ -619,7 +619,7 @@ const EnhancedProfileManager: React.FC = () => {
                   </div>
                   <input
                     type="checkbox"
-                    checked={profile.preferences.emailNotifications}
+                    checked={profile?.preferences?.emailNotifications}
                     onChange={(e) => updatePreferences('emailNotifications', e.target.checked)}
                   />
                 </div>
@@ -630,7 +630,7 @@ const EnhancedProfileManager: React.FC = () => {
                   </div>
                   <input
                     type="checkbox"
-                    checked={profile.preferences.smsNotifications}
+                    checked={profile?.preferences?.smsNotifications}
                     onChange={(e) => updatePreferences('smsNotifications', e.target.checked)}
                   />
                 </div>
@@ -641,7 +641,7 @@ const EnhancedProfileManager: React.FC = () => {
                   </div>
                   <input
                     type="checkbox"
-                    checked={profile.preferences.pushNotifications}
+                    checked={profile?.preferences?.pushNotifications}
                     onChange={(e) => updatePreferences('pushNotifications', e.target.checked)}
                   />
                 </div>
@@ -661,7 +661,7 @@ const EnhancedProfileManager: React.FC = () => {
                 <div>
                   <Label>Language</Label>
                   <Select
-                    value={profile.preferences.language}
+                    value={profile?.preferences?.language}
                     onValueChange={(value) => updatePreferences('language', value)}
                   >
                     <SelectTrigger>
@@ -678,7 +678,7 @@ const EnhancedProfileManager: React.FC = () => {
                 <div>
                   <Label>Timezone</Label>
                   <Select
-                    value={profile.preferences.timezone}
+                    value={profile?.preferences?.timezone}
                     onValueChange={(value) => updatePreferences('timezone', value)}
                   >
                     <SelectTrigger>

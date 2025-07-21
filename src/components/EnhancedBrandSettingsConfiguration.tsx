@@ -168,15 +168,17 @@ const EnhancedBrandSettingsConfiguration: React.FC<EnhancedBrandSettingsConfigur
   useEffect(() => {
     fetchSettings();
   }, [brandId]);
+// console.log("settings",settings);
 
   const fetchSettings = async () => {
     try {
       setLoading(true);
       const response = await fetch(`/api/brand/settings?brandId=${brandId}`);
-      
-      if (response.ok) {
-        const data = await response.json();
-        setSettings(data.settings);
+       const data = await response.json();
+          // console.log("data",data);
+      if (data?.brandProfile?.settings) {
+         
+        setSettings(data?.brandProfile?.settings);
       } else {
         // Initialize with default settings
         setSettings({
