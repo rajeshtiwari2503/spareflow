@@ -121,9 +121,12 @@ model User {
   password String
   role     UserRole
   phone    String?
+  companyName  String?
+  gstNumber    String?
+  panNumber    String?
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
   // Profile relationships
   brandProfile          BrandProfile?
   serviceCenterProfile  ServiceCenterProfile?
@@ -846,6 +849,7 @@ model BrandProfile {
   contactPerson String?  @map("contact_person")
   website       String?
   description   String?
+   settings Json? 
   isVerified    Boolean  @default(false) @map("is_verified")
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt

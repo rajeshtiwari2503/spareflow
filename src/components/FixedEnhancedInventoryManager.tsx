@@ -341,6 +341,8 @@ const FixedEnhancedInventoryManager: React.FC<FixedEnhancedInventoryManagerProps
         })
       });
 
+
+      
       if (response.ok) {
         const data = await response.json();
         setParts(prev => [data.data, ...prev]);

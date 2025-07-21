@@ -72,7 +72,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             isDefault: addr.isDefault
           }));
         }
-      } else if (userData.role === 'BRAND') {
+      } 
+      else if (userData.role === 'BRAND') {
         const profile = await prisma.brandProfile.findFirst({
           where: { userId: userData.id }
         });
@@ -91,7 +92,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             isDefault: addr.isDefault
           }));
         }
-      } else if (userData.role === 'CUSTOMER') {
+      }
+      
+      else if (userData.role === 'CUSTOMER') {
         const profile = await prisma.customerProfile.findFirst({
           where: { userId: userData.id }
         });
@@ -140,9 +143,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       return res.status(200).json({ success: true, profile });
 
-    } else if (req.method === 'PUT') {
+    } 
+    
+    else if (req.method === 'PUT') {
       // Update user profile
-      const { name, email, phone, addresses } = req.body;
+      const { name, email, phone, addresses,panNumber,gstNumber,companyName ,role} = req.body;
+// console.log("req.body",req.body);
 
       // Validate required fields
       if (!name || !email) {
@@ -155,14 +161,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // Start a transaction to update user and related data
       const result = await prisma.$transaction(async (tx) => {
         // Update user basic info
-        const updatedUser = await tx.user.update({
-          where: { id: userId },
-          data: {
-            name: name,
-            email: email,
-            phone: phone || null
-          }
-        });
+        const updateData: any = {
+      name,
+      email,
+      phone: phone || null,
+    };
+
+    if (role === 'BRAND') {
+      if (companyName) updateData.companyName = companyName;
+      if (gstNumber) updateData.gstNumber = gstNumber;
+      if (panNumber) updateData.panNumber = panNumber;
+    }
+
+    const updatedUser = await tx.user.update({
+      where: { id: userId },
+      data: updateData,
+    });
+console.log("updatedUser",updatedUser);
 
         // Handle addresses based on user role
         if (addresses && Array.isArray(addresses)) {
@@ -191,7 +206,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 });
               }
             }
-          } else if (updatedUser.role === 'BRAND') {
+          } 
+          else if (updatedUser.role === 'BRAND') {
             const profile = await tx.brandProfile.findFirst({
               where: { userId: updatedUser.id }
             });
@@ -277,7 +293,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         user: result
       });
 
-    } else {
+    }
+    
+    else {
       res.setHeader('Allow', ['GET', 'PUT']);
       return res.status(405).json({ success: false, message: 'Method not allowed' });
     }
