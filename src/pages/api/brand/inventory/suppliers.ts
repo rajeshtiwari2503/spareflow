@@ -5,7 +5,7 @@ import { verifyToken } from '@/lib/auth';
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
     const user = await verifyToken(req);
-    
+
     if (!user) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
@@ -16,94 +16,124 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const brandId = req.query.brandId as string || user.id;
 
-    if (req.method === 'GET') {
-      // For now, return mock data since we don't have a suppliers table
-      // In a real implementation, you would fetch from a suppliers table
-      const suppliers = [
-        {
-          id: 'sup1',
-          code: 'SUP001',
-          name: 'Premium Parts Supplier',
-          type: 'MANUFACTURER',
-          rating: 4.5,
-          reliability: 95,
-          leadTime: 7,
-          paymentTerms: 'NET30',
-          currency: 'INR',
-          taxId: 'GSTIN123456789',
-          contact: {
-            person: 'John Doe',
-            email: 'john@premiumparts.com',
-            phone: '+91-9876543210',
-            address: '123 Industrial Area, Mumbai, Maharashtra 400001'
-          },
-          performance: {
-            onTimeDelivery: 95,
-            qualityRating: 4.5,
-            priceCompetitiveness: 4.0,
-            responsiveness: 4.2
-          },
-          certifications: ['ISO9001:2015', 'ISO14001:2015', 'OHSAS18001'],
-          active: true
-        },
-        {
-          id: 'sup2',
-          code: 'SUP002',
-          name: 'Quality Components Ltd',
-          type: 'DISTRIBUTOR',
-          rating: 4.2,
-          reliability: 88,
-          leadTime: 10,
-          paymentTerms: 'NET45',
-          currency: 'INR',
-          taxId: 'GSTIN987654321',
-          contact: {
-            person: 'Jane Smith',
-            email: 'jane@qualitycomp.com',
-            phone: '+91-9876543211',
-            address: '456 Business Park, Delhi, Delhi 110001'
-          },
-          performance: {
-            onTimeDelivery: 88,
-            qualityRating: 4.2,
-            priceCompetitiveness: 4.3,
-            responsiveness: 4.0
-          },
-          certifications: ['ISO9001:2015'],
-          active: true
-        },
-        {
-          id: 'sup3',
-          code: 'SUP003',
-          name: 'Fast Delivery Parts',
-          type: 'WHOLESALER',
-          rating: 3.8,
-          reliability: 82,
-          leadTime: 5,
-          paymentTerms: 'NET15',
-          currency: 'INR',
-          taxId: 'GSTIN456789123',
-          contact: {
-            person: 'Mike Johnson',
-            email: 'mike@fastdelivery.com',
-            phone: '+91-9876543212',
-            address: '789 Logistics Hub, Bangalore, Karnataka 560001'
-          },
-          performance: {
-            onTimeDelivery: 82,
-            qualityRating: 3.8,
-            priceCompetitiveness: 4.5,
-            responsiveness: 4.1
-          },
-          certifications: [],
-          active: true
-        }
-      ];
+    // if (req.method === 'GET') {
+    //   // For now, return mock data since we don't have a suppliers table
+    //   // In a real implementation, you would fetch from a suppliers table
+    //   const suppliers = [
+    //     {
+    //       id: 'sup1',
+    //       code: 'SUP001',
+    //       name: 'Premium Parts Supplier',
+    //       type: 'MANUFACTURER',
+    //       rating: 4.5,
+    //       reliability: 95,
+    //       leadTime: 7,
+    //       paymentTerms: 'NET30',
+    //       currency: 'INR',
+    //       taxId: 'GSTIN123456789',
+    //       contact: {
+    //         person: 'John Doe',
+    //         email: 'john@premiumparts.com',
+    //         phone: '+91-9876543210',
+    //         address: '123 Industrial Area, Mumbai, Maharashtra 400001'
+    //       },
+    //       performance: {
+    //         onTimeDelivery: 95,
+    //         qualityRating: 4.5,
+    //         priceCompetitiveness: 4.0,
+    //         responsiveness: 4.2
+    //       },
+    //       certifications: ['ISO9001:2015', 'ISO14001:2015', 'OHSAS18001'],
+    //       active: true
+    //     },
+    //     {
+    //       id: 'sup2',
+    //       code: 'SUP002',
+    //       name: 'Quality Components Ltd',
+    //       type: 'DISTRIBUTOR',
+    //       rating: 4.2,
+    //       reliability: 88,
+    //       leadTime: 10,
+    //       paymentTerms: 'NET45',
+    //       currency: 'INR',
+    //       taxId: 'GSTIN987654321',
+    //       contact: {
+    //         person: 'Jane Smith',
+    //         email: 'jane@qualitycomp.com',
+    //         phone: '+91-9876543211',
+    //         address: '456 Business Park, Delhi, Delhi 110001'
+    //       },
+    //       performance: {
+    //         onTimeDelivery: 88,
+    //         qualityRating: 4.2,
+    //         priceCompetitiveness: 4.3,
+    //         responsiveness: 4.0
+    //       },
+    //       certifications: ['ISO9001:2015'],
+    //       active: true
+    //     },
+    //     {
+    //       id: 'sup3',
+    //       code: 'SUP003',
+    //       name: 'Fast Delivery Parts',
+    //       type: 'WHOLESALER',
+    //       rating: 3.8,
+    //       reliability: 82,
+    //       leadTime: 5,
+    //       paymentTerms: 'NET15',
+    //       currency: 'INR',
+    //       taxId: 'GSTIN456789123',
+    //       contact: {
+    //         person: 'Mike Johnson',
+    //         email: 'mike@fastdelivery.com',
+    //         phone: '+91-9876543212',
+    //         address: '789 Logistics Hub, Bangalore, Karnataka 560001'
+    //       },
+    //       performance: {
+    //         onTimeDelivery: 82,
+    //         qualityRating: 3.8,
+    //         priceCompetitiveness: 4.5,
+    //         responsiveness: 4.1
+    //       },
+    //       certifications: [],
+    //       active: true
+    //     }
+    //   ];
 
-      return res.status(200).json({
-        success: true,
-        data: suppliers
-      });
+    //   return res.status(200).json({
+    //     success: true,
+    //     data: suppliers
+    //   });
+    // }
+    if (req.method === 'GET') {
+
+      const brandId = req.query.brandId as string | undefined;
+
+      const whereClause = brandId ? { brandId } : {};
+      // console.log("ram................whereClause",whereClause);
+      try {
+        const suppliers = await prisma.supplier.findMany({
+            where: whereClause,
+          include: {
+            contact: true,
+            performance: true,
+            certifications: true,
+          },
+          orderBy: {
+            createdAt: 'desc',
+          },
+        });
+        return res.status(200).json({
+          success: true,
+          data: suppliers
+        });
+      } catch (error) {
+        console.error('Error fetching suppliers:', error);
+        return res.status(500).json({
+          success: false,
+          error: 'Failed to fetch suppliers from the database.'
+        });
+      }
     }
 
     if (req.method === 'POST') {
@@ -119,58 +149,79 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         taxId,
         contact,
         performance,
-        certifications
+        certifications,
+        brandId // you need to get this from somewhere (req.body or user session)
       } = req.body;
 
+
       // Validate required fields
-      if (!code || !name || !type) {
-        return res.status(400).json({ 
-          error: 'Missing required fields: code, name, type' 
+      if (!code || !name || !type || !brandId) {
+        return res.status(400).json({
+          error: 'Missing required fields: code, name, type, brandId'
         });
       }
 
-      // For now, simulate adding a supplier
-      // In a real implementation, you would insert into a suppliers table
-      const newSupplier = {
-        id: `sup_${Date.now()}`,
-        code,
-        name,
-        type,
-        rating: rating || 0,
-        reliability: reliability || 0,
-        leadTime: leadTime || 0,
-        paymentTerms: paymentTerms || 'NET30',
-        currency: currency || 'INR',
-        taxId: taxId || null,
-        contact: contact || {
-          person: '',
-          email: '',
-          phone: '',
-          address: ''
-        },
-        performance: performance || {
-          onTimeDelivery: 0,
-          qualityRating: 0,
-          priceCompetitiveness: 0,
-          responsiveness: 0
-        },
-        certifications: certifications || [],
-        active: true,
-        brandId,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
+      try {
+        const newSupplier = await prisma.supplier.create({
+          data: {
+            code,
+            name,
+            type,
+            rating: rating ?? 0,
+            reliability: reliability ?? 0,
+            leadTime: leadTime ?? 0,
+            paymentTerms: paymentTerms ?? 'NET30',
+            currency: currency ?? 'INR',
+            taxId,
+            active: true,
+            brandId,
+            contact: contact
+              ? {
+                create: {
+                  person: contact.person ?? '',
+                  email: contact.email ?? '',
+                  phone: contact.phone ?? '',
+                  address: contact.address ?? '',
+                }
+              }
+              : undefined,
+            performance: performance
+              ? {
+                create: {
+                  onTimeDelivery: performance.onTimeDelivery ?? 0,
+                  qualityRating: performance.qualityRating ?? 0,
+                  priceCompetitiveness: performance.priceCompetitiveness ?? 0,
+                  responsiveness: performance.responsiveness ?? 0,
+                }
+              }
+              : undefined,
+            certifications: certifications && certifications.length > 0
+              ? {
+                create: certifications.map((cert: string) => ({ name: cert }))
+              }
+              : undefined,
+          }
+        });
 
-      return res.status(201).json({
-        success: true,
-        data: newSupplier,
-        message: 'Supplier added successfully'
-      });
+        return res.status(201).json({
+          success: true,
+          data: newSupplier,
+          message: 'Supplier added successfully'
+        });
+
+      } catch (error) {
+        console.error('Error creating supplier:', error);
+        return res.status(500).json({
+          success: false,
+          error: error instanceof Error ? error.message : 'Failed to add supplier to the database.'
+        });
+      }
     }
+
 
     if (req.method === 'PUT') {
       const supplierId = req.query.supplierId as string;
-      
+
       if (!supplierId) {
         return res.status(400).json({ error: 'Supplier ID is required' });
       }
@@ -194,7 +245,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     if (req.method === 'DELETE') {
       const supplierId = req.query.supplierId as string;
-      
+
       if (!supplierId) {
         return res.status(400).json({ error: 'Supplier ID is required' });
       }
@@ -210,7 +261,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ error: 'Method not allowed' });
   } catch (error) {
     console.error('Suppliers API error:', error);
-    return res.status(500).json({ 
+    return res.status(500).json({
       error: 'Internal server error',
       details: error instanceof Error ? error.message : 'Unknown error'
     });
