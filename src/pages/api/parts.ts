@@ -103,7 +103,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         seoTitle,
         seoDescription
       } = req.body;
-
+const imageUrlsStr = Array.isArray(imageUrls) ? JSON.stringify(imageUrls) : (imageUrls || null);
+const installationVideosStr = Array.isArray(installationVideos) ? JSON.stringify(installationVideos) : (installationVideos || null);
+const technicalDrawingsStr =Array.isArray(technicalDrawings) ? JSON.stringify(technicalDrawings): (technicalDrawings || null);
       // Validate required fields
       if (!code || !name || price === undefined) {
         return res.status(400).json({ 
@@ -145,7 +147,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         safetyWarnings && `Safety: ${safetyWarnings}`,
         environmentalConditions && `Environment: ${environmentalConditions}`,
         relatedParts && `Related Parts: ${relatedParts}`,
-        seasonalDemand && `Seasonal: ${seasonalDemand}`,
+        // seasonalDemand && `Seasonal: ${seasonalDemand}`,
         maintenanceInterval && `Maintenance: ${maintenanceInterval}`,
         lifespan && `Lifespan: ${lifespan}`,
         installationDifficulty && `Installation: ${installationDifficulty}`,
@@ -188,10 +190,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           status: 'published',
           // Media fields
           imageUrl: imageUrl || null,
-          imageUrls: imageUrls || null,
+          imageUrls: imageUrlsStr,
           diyVideoUrl: diyVideoUrl || null,
-          installationVideos: installationVideos || null,
-          technicalDrawings: technicalDrawings || null,
+          installationVideos: installationVideosStr,
+          technicalDrawings: technicalDrawingsStr,
           // AI-optimized fields
           problemKeywords: problemKeywords || null,
           symptoms: symptoms || null,
@@ -432,6 +434,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           }
         }
       });
+ 
 
       return res.status(200).json({
         success: true,

@@ -5,7 +5,7 @@ import { verifyToken } from '@/lib/auth';
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
     const user = await verifyToken(req);
-    
+
     if (!user) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
@@ -32,9 +32,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               onHandQuantity: true,
               availableQuantity: true,
               reservedQuantity: true,
-              defectiveQuantity: true,
-              quarantineQuantity: true,
-              inTransitQuantity: true,
+              // defectiveQuantity: true,
+              // quarantineQuantity: true,
+              // inTransitQuantity: true,
               lastUpdated: true
             }
           }
@@ -96,6 +96,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         featured,
         isActive
       } = req.body;
+      console.log("req.body;", req.body);
 
       // Check if new code conflicts with existing parts (excluding current part)
       if (code && code !== existingPart.code) {
@@ -108,8 +109,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         });
 
         if (codeConflict) {
-          return res.status(400).json({ 
-            error: 'Part code already exists for this brand' 
+          return res.status(400).json({
+            error: 'Part code already exists for this brand'
           });
         }
       }
@@ -137,6 +138,35 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           tags: tags !== undefined ? tags : existingPart.tags,
           featured: featured !== undefined ? featured : existingPart.featured,
           isActive: isActive !== undefined ? isActive : existingPart.isActive,
+
+
+          problemKeywords: req.body.problemKeywords ?? existingPart.problemKeywords,
+          symptoms: req.body.symptoms ?? existingPart.symptoms,
+          compatibleAppliances: req.body.compatibleAppliances ?? existingPart.compatibleAppliances,
+          installationDifficulty: req.body.installationDifficulty ?? existingPart.installationDifficulty,
+          commonFailureReasons: req.body.commonFailureReasons ?? existingPart.commonFailureReasons,
+          troubleshootingSteps: req.body.troubleshootingSteps ?? existingPart.troubleshootingSteps,
+          relatedParts: req.body.relatedParts ?? existingPart.relatedParts,
+          urgencyLevel: req.body.urgencyLevel ?? existingPart.urgencyLevel,
+          customerDescription: req.body.customerDescription ?? existingPart.customerDescription,
+          technicalSpecs: req.body.technicalSpecs ?? existingPart.technicalSpecs,
+          safetyWarnings: req.body.safetyWarnings ?? existingPart.safetyWarnings,
+          maintenanceInterval: req.body.maintenanceInterval ?? existingPart.maintenanceInterval,
+          lifespan: req.body.lifespan ?? existingPart.lifespan,
+          environmentalConditions: req.body.environmentalConditions ?? existingPart.environmentalConditions,
+          imageUrl: req.body.imageUrl ?? existingPart.imageUrl,
+          imageUrls: req.body.imageUrls
+            ? JSON.stringify(req.body.imageUrls)
+            : existingPart.imageUrls,
+          diyVideoUrl: req.body.diyVideoUrl ?? existingPart.diyVideoUrl,
+          installationVideos: req.body.installationVideos
+            ? JSON.stringify(req.body.installationVideos)
+            : existingPart.installationVideos,
+          technicalDrawings: req.body.technicalDrawings
+            ? JSON.stringify(req.body.technicalDrawings)
+            : existingPart.technicalDrawings,
+
+
           updatedAt: new Date()
         },
         include: {
@@ -177,15 +207,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       // Check if part is used in any shipments or inventory
       const inventoryCount = await prisma.brandInventory.count({
-        where: { 
+        where: {
           partId: partId,
           onHandQuantity: { gt: 0 }
         }
       });
 
       if (inventoryCount > 0) {
-        return res.status(400).json({ 
-          error: 'Cannot delete part with existing inventory. Please adjust stock to zero first.' 
+        return res.status(400).json({
+          error: 'Cannot delete part with existing inventory. Please adjust stock to zero first.'
         });
       }
 
@@ -209,7 +239,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ error: 'Method not allowed' });
   } catch (error) {
     console.error('Part API error:', error);
-    return res.status(500).json({ 
+    return res.status(500).json({
       error: 'Internal server error',
       details: error instanceof Error ? error.message : 'Unknown error'
     });

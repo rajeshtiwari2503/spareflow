@@ -247,7 +247,7 @@ const ComprehensiveInventoryManager: React.FC<ComprehensiveInventoryManagerProps
     commonFailureReasons: '',
     troubleshootingSteps: '',
     relatedParts: '',
-    seasonalDemand: '',
+    // seasonalDemand: '',
     urgencyLevel: 'MEDIUM',
     customerDescription: '',
     technicalSpecs: '',
@@ -322,6 +322,8 @@ const ComprehensiveInventoryManager: React.FC<ComprehensiveInventoryManagerProps
 
       if (inventoryRes.ok) {
         const inventoryData = await inventoryRes.json();
+        console.log("inventoryData",inventoryData);
+        
         setInventory(inventoryData.data?.inventory || []);
       }
 
@@ -387,7 +389,7 @@ const ComprehensiveInventoryManager: React.FC<ComprehensiveInventoryManagerProps
       commonFailureReasons: '',
       troubleshootingSteps: '',
       relatedParts: '',
-      seasonalDemand: '',
+      // seasonalDemand: '',
       urgencyLevel: 'MEDIUM',
       customerDescription: '',
       technicalSpecs: '',
@@ -781,7 +783,7 @@ const ComprehensiveInventoryManager: React.FC<ComprehensiveInventoryManagerProps
           commonFailureReasons: partData.commonFailureReasons || '',
           troubleshootingSteps: partData.troubleshootingSteps || '',
           relatedParts: partData.relatedParts || '',
-          seasonalDemand: partData.seasonalDemand || '',
+          // seasonalDemand: partData.seasonalDemand || '',
           urgencyLevel: partData.urgencyLevel || 'MEDIUM',
           customerDescription: partData.customerDescription || '',
           technicalSpecs: partData.technicalSpecs || '',
@@ -827,7 +829,7 @@ const ComprehensiveInventoryManager: React.FC<ComprehensiveInventoryManagerProps
           commonFailureReasons: '',
           troubleshootingSteps: '',
           relatedParts: '',
-          seasonalDemand: '',
+          // seasonalDemand: '',
           urgencyLevel: 'MEDIUM',
           customerDescription: '',
           technicalSpecs: '',
@@ -881,7 +883,7 @@ const ComprehensiveInventoryManager: React.FC<ComprehensiveInventoryManagerProps
         commonFailureReasons: '',
         troubleshootingSteps: '',
         relatedParts: '',
-        seasonalDemand: '',
+        // seasonalDemand: '',
         urgencyLevel: 'MEDIUM',
         customerDescription: '',
         technicalSpecs: '',
@@ -946,6 +948,7 @@ const ComprehensiveInventoryManager: React.FC<ComprehensiveInventoryManagerProps
     });
     setShowEditSupplierDialog(true);
   };
+console.log("inventory",inventory);
 
   // Filtered inventory
   const filteredInventory = useMemo(() => {
@@ -1385,7 +1388,7 @@ const ComprehensiveInventoryManager: React.FC<ComprehensiveInventoryManagerProps
                     <Upload className="h-4 w-4 mr-2" />
                     Import
                   </Button>
-                  <Button 
+                  {/* <Button 
                     variant="outline" 
                     size="sm"
                     onClick={async () => {
@@ -1414,7 +1417,7 @@ const ComprehensiveInventoryManager: React.FC<ComprehensiveInventoryManagerProps
                   >
                     <Package className="h-4 w-4 mr-2" />
                     Add TV Test Data
-                  </Button>
+                  </Button> */}
                 </div>
               </div>
             </CardHeader>
@@ -2552,7 +2555,7 @@ const ComprehensiveInventoryManager: React.FC<ComprehensiveInventoryManagerProps
                     <span>Business Intelligence</span>
                   </h3>
                   <div className="space-y-3">
-                    <div>
+                    {/* <div>
                       <Label htmlFor="seasonalDemand">Seasonal Demand Pattern</Label>
                       <Input
                         id="seasonalDemand"
@@ -2560,7 +2563,7 @@ const ComprehensiveInventoryManager: React.FC<ComprehensiveInventoryManagerProps
                         onChange={(e) => setPartForm(prev => ({ ...prev, seasonalDemand: e.target.value }))}
                         placeholder="e.g., Higher in summer (AC season), Peak during festivals"
                       />
-                    </div>
+                    </div> */}
                     <div>
                       <Label htmlFor="tags">Search Tags</Label>
                       <Input
@@ -2630,7 +2633,7 @@ const ComprehensiveInventoryManager: React.FC<ComprehensiveInventoryManagerProps
             </Button>
             <Button onClick={handleAddPart} className="bg-blue-600 hover:bg-blue-700">
               <Save className="w-4 h-4 mr-2" />
-              Add Part with AI Enhancement
+              Add Part with AI Enhancement 
             </Button>
           </div>
         </DialogContent>
@@ -3066,7 +3069,7 @@ const ComprehensiveInventoryManager: React.FC<ComprehensiveInventoryManagerProps
                     <span>Business Intelligence</span>
                   </h3>
                   <div className="space-y-3">
-                    <div>
+                    {/* <div>
                       <Label htmlFor="edit-seasonalDemand">Seasonal Demand Pattern</Label>
                       <Input
                         id="edit-seasonalDemand"
@@ -3074,7 +3077,7 @@ const ComprehensiveInventoryManager: React.FC<ComprehensiveInventoryManagerProps
                         onChange={(e) => setPartForm(prev => ({ ...prev, seasonalDemand: e.target.value }))}
                         placeholder="e.g., Higher in summer"
                       />
-                    </div>
+                    </div> */}
                     <div>
                       <Label htmlFor="edit-tags">Search Tags</Label>
                       <Input
